@@ -8,6 +8,12 @@
 go build -o ./bin/srtrelay ./cmd/srtrelay
 ```
 
+Or with Make:
+
+```bash
+make build
+```
+
 ## Project Layout
 
 ```text
@@ -30,6 +36,12 @@ go run ./cmd/srtrelay \
   -input-streamid source \
   -output :9001,view1 \
   -output :9002,view2
+```
+
+Or with Make:
+
+```bash
+make run ARGS='-input-addr :9000 -input-streamid source -output :9001,view1 -output :9002,view2'
 ```
 
 Output format:
