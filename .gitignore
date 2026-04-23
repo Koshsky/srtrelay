@@ -1,0 +1,19 @@
+# Binaries
+/srtrelay
+/bin/
+
+# Build artifacts
+*.out
+*.test
+
+# Logs and runtime artifacts
+*.log
+
+# Local media and test assets
+*.mp4
+*.ts
+
+# OS/editor files
+.DS_Store
+.vscode/
+.idea/
