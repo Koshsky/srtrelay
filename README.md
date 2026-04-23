@@ -21,6 +21,11 @@ make build
 ├── cmd/
 │   └── srtrelay/
 │       └── main.go
+├── internal/
+│   ├── config/
+│   │   └── config.go
+│   └── relay/
+│       └── relay.go
 ├── go.mod
 ├── go.sum
 └── README.md
