@@ -38,9 +38,8 @@ Example: one publisher on `:9000`, two listener outputs on `:9001` and `:9002`.
 ```bash
 go run ./cmd/srtrelay \
   -input-addr :9000 \
-  -input-streamid source \
-  -output :9001,view1 \
-  -output :9002,view2
+  -output :9001 \
+  -output :9002
 ```
 
 Or with Make:
@@ -66,9 +65,8 @@ Start the relay:
 ```bash
 go run ./cmd/srtrelay \
   -input-addr :9000 \
-  -input-streamid source \
-  -output :9001,view1 \
-  -output :9002,view2
+  -output :9001 \
+  -output :9002
 
 # Optional: explicit no-deadline mode for OBS-heavy scenarios
 # -write-timeout 0
@@ -81,21 +79,21 @@ ffmpeg -re -stream_loop -1 -i sample.mp4 \
   -c:v libx264 -preset veryfast -tune zerolatency \
   -c:a aac \
   -f mpegts \
-  "srt://127.0.0.1:9000?mode=caller&streamid=source"
+  "srt://127.0.0.1:9000?mode=caller"
 ```
 
 Connect two independent viewers to different outputs:
 
 ```bash
-ffplay "srt://127.0.0.1:9001?mode=caller&streamid=view1"
+ffplay "srt://127.0.0.1:9001?mode=caller"
 ```
 
 ```bash
-ffplay "srt://127.0.0.1:9002?mode=caller&streamid=view2"
+ffplay "srt://127.0.0.1:9002?mode=caller"
 ```
 
 You can also use `ffmpeg` instead of `ffplay` as a sink for validation:
 
 ```bash
-ffmpeg -i "srt://127.0.0.1:9001?mode=caller&streamid=view1" -f null -
+ffmpeg -i "srt://127.0.0.1:9001?mode=caller" -f null -
 ```
