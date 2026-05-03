@@ -1,99 +1,87 @@
 # srtrelay
 
-`srtrelay` is a small Go utility that accepts one incoming SRT stream and fans it out to multiple outgoing SRT listeners. All endpoints work in listener mode.
+`srtrelay` — утилита, которая принимает один входящий SRT-поток и раздаёт его нескольким исходящим SRT-слушателям. Все конечные точки работают в режиме слушателя (listener mode).
 
-## Build
 
-```bash
-go build -o ./bin/srtrelay ./cmd/srtrelay
-```
+## Запуск
 
-Or with Make:
-
-```bash
-make build
-```
-
-## Project Layout
-
-```text
-.
-├── cmd/
-│   └── srtrelay/
-│       └── main.go
-├── internal/
-│   ├── config/
-│   │   └── config.go
-│   └── relay/
-│       └── relay.go
-├── go.mod
-├── go.sum
-└── README.md
-```
-
-## Run
-
-Example: one publisher on `:9000`, two listener outputs on `:9001` and `:9002`.
+Пример: один публикатор на `:6200`, 4 слушателя на `:6201`, `:6202`, `:6203` и `:6204`
 
 ```bash
 go run ./cmd/srtrelay \
-  -input-addr :9000 \
-  -output :9001 \
-  -output :9002
+  -input-addr :6200 \
+  -output :6201 \
+  -output :6202 \
+  -output :6203 \
+  -output :6204
 ```
 
-Or with Make:
-
-```bash
-make run ARGS='-input-addr :9000 -input-streamid source -output :9001,view1 -output :9002,view2'
-```
-
-Output format:
+Формат параметра output:
 
 ```text
 -output addr[,streamid[,passphrase]]
 ```
 
-If `streamid` is omitted, that listener accepts any stream id. If `passphrase` is omitted, encryption is disabled for that endpoint.
+Если `streamid` не указан — слушатель принимает любой stream id.
+Если `passphrase` не указан — шифрование для этой точки отключено.
 
-By default `-write-timeout` is `0` (disabled), which is usually safer for OBS subscribers that can pause/reopen sources.
+По умолчанию `-write-timeout` равен `0` (отключён), что обычно безопаснее для OBS-подписчиков, которые могут ставить на паузу или переоткрывать источники.
 
-## Test With ffmpeg and ffplay
+## Тестирование с ffmpeg и ffplay
 
-Start the relay:
+Запустите ретранслятор:
 
 ```bash
 go run ./cmd/srtrelay \
-  -input-addr :9000 \
-  -output :9001 \
-  -output :9002
-
-# Optional: explicit no-deadline mode for OBS-heavy scenarios
+  -input-addr :6200 \
+  -output :6201 \
+  -output :6202 \
+  -output :6203 \
+  -output :6204
+# Опционально: явный режим без дедлайна для сценариев с OBS(?)
 # -write-timeout 0
 ```
 
-Publish one SRT input into the relay:
+Опубликуйте SRT-поток в ретранслятор:
 
+Файлы .mp4
 ```bash
 ffmpeg -re -stream_loop -1 -i sample.mp4 \
   -c:v libx264 -preset veryfast -tune zerolatency \
   -c:a aac \
   -f mpegts \
-  "srt://127.0.0.1:9000?mode=caller"
+  "srt://127.0.0.1:6200?mode=caller"
 ```
 
-Connect two independent viewers to different outputs:
+Файлы .mov
+```bash
+ffmpeg -re -stream_loop -1 -i sample.mov \
+  -c:v libx264 -preset veryfast -tune zerolatency \
+  -c:a aac \
+  -f mpegts \
+  "srt://127.0.0.1:6200?mode=caller"
+```
+
+Камера (Linux)
+```bash
+ffmpeg -f v4l2 -video_size 640x480 -framerate 30 -input_format yuyv422 -i /dev/video0 \
+  -pix_fmt yuv420p -c:v libx264 -preset ultrafast -tune zerolatency \
+  -f mpegts "srt://127.0.0.1:6200?mode=caller"
+```
+
+
+Подключите двух независимых зрителей к разным выходам:
 
 ```bash
-ffplay "srt://127.0.0.1:9001?mode=caller"
+ffplay "srt://127.0.0.1:6201?mode=caller"
 ```
 
 ```bash
-ffplay "srt://127.0.0.1:9002?mode=caller"
+ffplay "srt://127.0.0.1:6204?mode=caller"
 ```
 
-You can also use `ffmpeg` instead of `ffplay` as a sink for validation:
+Также можно использовать `ffmpeg` вместо `ffplay` в качестве приёмника для проверки:
 
 ```bash
-ffmpeg -i "srt://127.0.0.1:9001?mode=caller" -f null -
+ffmpeg -i "srt://127.0.0.1:6203?mode=caller" -f null -
 ```
