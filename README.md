@@ -27,6 +27,57 @@ go run ./cmd/srtrelay \
 
 По умолчанию `-write-timeout` равен `0` (отключён), что обычно безопаснее для OBS-подписчиков, которые могут ставить на паузу или переоткрывать источники.
 
+
+## Запуск через Docker
+
+### Сборка и запуск
+
+```bash
+docker compose up -d --build
+```
+
+Флаг `-d` запускает контейнер в фоновом режиме. При первом запуске образ соберётся автоматически.
+
+### Настройка параметров
+
+Все параметры ретранслятора задаются в секции `command:` файла `docker-compose.yaml`:
+
+```yaml
+command:
+  - "-input-addr=:6200"
+  - "-output=:6201"
+  - "-output=:6202"
+  - "-output=:6203"
+  - "-output=:6205"
+```
+
+Не забудь добавить соответствующий порт в секцию `ports:` для каждого нового выхода.
+
+Доступные параметры:
+
+| Параметр | Описание |
+|---|---|
+| `-input-addr` | Адрес входного SRT-слушателя |
+| `-input-streamid` | Ожидаемый stream id от публикатора |
+| `-input-passphrase` | Пароль для входящего подключения |
+| `-output` | Выходной адрес в формате `addr[,streamid[,passphrase]]` |
+| `-write-timeout` | Таймаут записи на выход (0 — отключён) |
+| `-buffer-size` | Размер буфера чтения в байтах |
+
+### Перезапуск после изменения параметров
+
+После любых изменений в `docker-compose.yaml`:
+
+```bash
+docker compose down && docker compose up -d
+```
+
+### Просмотр логов
+
+```bash
+docker compose logs -f
+```
+
 ## Тестирование с ffmpeg и ffplay
 
 Запустите ретранслятор:
@@ -64,7 +115,7 @@ ffmpeg -re -stream_loop -1 -i sample.mov \
 
 Камера (Linux)
 ```bash
-ffmpeg -f v4l2 -video_size 640x480 -framerate 30 -input_format yuyv422 -i /dev/video0 \
+ffmpeg -f v4l2 -i /dev/video0 \
   -pix_fmt yuv420p -c:v libx264 -preset ultrafast -tune zerolatency \
   -f mpegts "srt://127.0.0.1:6200?mode=caller"
 ```

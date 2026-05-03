@@ -1,0 +1,21 @@
+services:
+  srtrelay:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "6200:6200/udp"   # input
+      - "6201:6201/udp"   # output 1
+      - "6202:6202/udp"   # output 2
+      - "6203:6203/udp"   # output 3
+      - "6204:6204/udp"   # output 4
+    command:
+      - "-input-addr=:6200"
+      - "-output=:6201"
+      - "-output=:6202"
+      - "-output=:6203"
+      - "-output=:6204"
+    # Дополнительные опции (раскомментируй при необходимости):
+    # - "-input-streamid=source"
+    # - "-input-passphrase=secret"
+    # - "-write-timeout=5s"
+    # - "-buffer-size=10528"
